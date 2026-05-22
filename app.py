@@ -35,7 +35,7 @@ creds_json = json.loads(os.environ["GOOGLE_CREDENTIALS"])
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
 
 client = gspread.authorize(creds)
-SHEET_ID = "1Ryj_ply3dJ6v9ZCE_QJXUr7VXdFHqF0HWwJb0ODQ6Js"
+SHEET_ID = "1Ryj_plY3dJ6v9ZCE_QJXuR7vXdFHqFOHWwJb0ODQ6Js"
 sheet = client.open_by_key(SHEET_ID).sheet1
 
 
