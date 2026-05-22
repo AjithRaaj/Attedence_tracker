@@ -3,7 +3,6 @@ from datetime import datetime
 from geopy.distance import geodesic
 import json
 import gspread
-import os
 from oauth2client.service_account import ServiceAccountCredentials
 
 # =========================================
@@ -31,13 +30,16 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds_json = json.loads(os.environ["GOOGLE_CREDENTIALS"])
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name(
+    "service_account.json",
+    scope
+)
 
 client = gspread.authorize(creds)
-SHEET_ID = "1Ryj_plY3dJ6v9ZCE_QJXuR7vXdFHqFOHWwJb0ODQ6Js"
-sheet = client.open_by_key(SHEET_ID).sheet1
 
+SHEET_ID = "1Ryj_plY3dJ6v9ZCE_QJXuR7vXdFHqFOHWwJb0ODQ6Js"
+
+sheet = client.open_by_key(SHEET_ID).sheet1
 
 # =========================================
 # LOAD EMPLOYEE JSON
