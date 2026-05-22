@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Tracking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+<h1>Attendance Tracking System</h1>
+
+<div class="quote">
+    “Success starts with discipline.”
+</div>
+
+<input type="text" id="emp_id" placeholder="Employee ID">
+<button onclick="loadEmployee()">Load Employee</button>
+
+<input type="text" id="name" placeholder="Employee Name" readonly>
+<input type="text" id="phone" placeholder="Phone Number" readonly>
+<input type="text" value="Chennai Office" readonly>
+
+<div class="buttons">
+    <button class="in-btn" onclick="markAttendance('in')">Punch IN</button>
+    <button class="out-btn" onclick="markAttendance('out')">Punch OUT</button>
+</div>
+
+<div class="footer">
+    Created By Ajith MIS
+</div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
