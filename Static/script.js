@@ -1,14 +1,15 @@
-// Generate or reuse device ID
+// ✅ Generate or reuse device ID
 function getDeviceId() {
     let deviceId = localStorage.getItem("device_id");
     if (!deviceId) {
-        deviceId = 'DEV-' + Math.random().toString(36).substr(2, 12);
+        // Use crypto for stronger unique ID
+        deviceId = 'DEV-' + crypto.randomUUID();
         localStorage.setItem("device_id", deviceId);
     }
     return deviceId;
 }
 
-// Load employee details
+// ✅ Load employee details
 async function loadEmployee() {
     const empId = document.getElementById("emp_id").value;
 
@@ -24,6 +25,10 @@ async function loadEmployee() {
             body: JSON.stringify({ emp_id: empId })
         });
 
+        if (!response.ok) {
+            throw new Error("Server error: " + response.status);
+        }
+
         const data = await response.json();
 
         if (data.success) {
@@ -38,7 +43,7 @@ async function loadEmployee() {
     }
 }
 
-// Mark attendance (Punch IN / OUT)
+// ✅ Mark attendance (Punch IN / OUT)
 function markAttendance(action) {
     if (!navigator.geolocation) {
         alert("Geolocation not supported ❌");
@@ -56,7 +61,8 @@ function markAttendance(action) {
                 return;
             }
 
-            const otp = prompt('Enter Your Secure OTP');
+            // Get OTP from input field instead of prompt
+            const otp = document.getElementById("otp") ? document.getElementById("otp").value : null;
             if (!otp) {
                 alert("OTP required ❌");
                 return;
@@ -78,16 +84,21 @@ function markAttendance(action) {
                     })
                 });
 
+                if (!response.ok) {
+                    throw new Error("Server error: " + response.status);
+                }
+
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(
-`${data.name}
-${data.message}
-Date : ${data.date}
-Time : ${data.time}
-Status : ${data.status}`
-                    );
+                    // Show result inside page if #status exists, else fallback to alert
+                    const statusDiv = document.getElementById("status");
+                    const message = `${data.name}\n${data.message}\nDate : ${data.date}\nTime : ${data.time}\nStatus : ${data.status}`;
+                    if (statusDiv) {
+                        statusDiv.innerText = message;
+                    } else {
+                        alert(message);
+                    }
                 } else {
                     alert(data.message || "Attendance failed ❌");
                 }
@@ -106,6 +117,11 @@ Status : ${data.status}`
             } else {
                 alert("Location error ❌");
             }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000, // 10 seconds
+            maximumAge: 0
         }
     );
 }
