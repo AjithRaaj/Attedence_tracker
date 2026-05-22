@@ -23,6 +23,10 @@ ALLOWED_RADIUS = 30   # meters
 # GOOGLE SHEETS SETUP
 # =========================================
 
+import os
+import json
+from oauth2client.service_account import ServiceAccountCredentials
+
 scope = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/spreadsheets",
@@ -30,10 +34,13 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    "service_account.json",
-    scope
-)
+if os.environ.get("GOOGLE_CREDENTIALS"):
+    # Load from Render environment variable
+    service_account_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, scope)
+else:
+    # Fallback for local testing
+    creds = ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
 
 client = gspread.authorize(creds)
 
