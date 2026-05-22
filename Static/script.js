@@ -1,16 +1,32 @@
-// SAFE DEVICE ID
+console.log("Script Loaded Successfully");
+
+// ===============================
+// SAFE GET FUNCTION
+// ===============================
+function safeGet(id) {
+    return document.getElementById(id)?.value || "";
+}
+
+// ===============================
+// DEVICE ID
+// ===============================
 function getDeviceId() {
     let deviceId = localStorage.getItem("device_id");
+
     if (!deviceId) {
         deviceId = 'DEV-' + Math.random().toString(36).substring(2) + Date.now();
         localStorage.setItem("device_id", deviceId);
     }
+
     return deviceId;
 }
 
+// ===============================
 // LOAD EMPLOYEE
+// ===============================
 async function loadEmployee() {
-    const empId = document.getElementById("emp_id").value;
+
+    const empId = safeGet("emp_id");
 
     if (!empId) {
         alert("Employee ID required ❌");
@@ -32,17 +48,20 @@ async function loadEmployee() {
         } else {
             alert("Employee not found ❌");
         }
+
     } catch (err) {
         console.error(err);
         alert("Server error ❌");
     }
 }
 
-// ATTENDANCE
+// ===============================
+// MARK ATTENDANCE
+// ===============================
 function markAttendance(action) {
 
-    const emp_id = document.getElementById("emp_id").value;
-    const otp = document.getElementById("otp").value;
+    const emp_id = safeGet("emp_id");
+    const otp = safeGet("otp");
 
     if (!emp_id) {
         alert("Employee ID required ❌");
