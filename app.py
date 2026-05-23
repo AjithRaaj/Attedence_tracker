@@ -28,7 +28,9 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
+# =========================================
 # GOOGLE CREDENTIALS
+# =========================================
 if os.environ.get("GOOGLE_CREDENTIALS"):
 
     service_account_info = json.loads(
@@ -49,7 +51,9 @@ else:
 
 client = gspread.authorize(creds)
 
+# =========================================
 # GOOGLE SHEET
+# =========================================
 SHEET_ID = "1Ryj_plY3dJ6v9ZCE_QJXuR7vXdFHqFOHWwJb0ODQ6Js"
 
 sheet = client.open_by_key(SHEET_ID).sheet1
@@ -77,7 +81,9 @@ def get_employee():
 
         data = request.json
 
-        emp_id = str(data.get('emp_id')).strip()
+        emp_id = str(
+            data.get('emp_id')
+        ).strip()
 
         emp = employees.get(emp_id)
 
@@ -113,12 +119,25 @@ def attendance():
 
         data = request.json
 
-        emp_id = str(data.get('emp_id')).strip()
-        otp = str(data.get('otp')).strip()
+        emp_id = str(
+            data.get('emp_id')
+        ).strip()
+
+        otp = str(
+            data.get('otp')
+        ).strip()
+
         lat = float(data.get('lat'))
+
         lon = float(data.get('lon'))
-        action = str(data.get('action')).strip().lower()
-        device_id = str(data.get('device_id')).strip()
+
+        action = str(
+            data.get('action')
+        ).strip().lower()
+
+        device_id = str(
+            data.get('device_id')
+        ).strip()
 
         # =========================================
         # EMPLOYEE CHECK
@@ -206,6 +225,7 @@ def attendance():
                 rec.get('Employee ID')
             ).strip()
 
+            # SAME DEVICE DIFFERENT EMPLOYEE
             if existing_device == device_id:
 
                 if existing_emp != emp_id:
@@ -242,7 +262,7 @@ def attendance():
 
                 in_status = f'{late} mins Late'
 
-            # SAVE
+            # SAVE TO SHEET
             sheet.append_row([
                 date_str,
                 emp_id,
@@ -329,13 +349,20 @@ def attendance():
             # =========================================
             # WORKING HOURS CALCULATION
             # =========================================
+
+            # FIX GOOGLE SHEET TIME FORMAT
+            clean_in_time = in_time.strip().replace('.', ':')
+
+            clean_out_time = time_str.strip().replace('.', ':')
+
+            # CONVERT TIME
             in_datetime = datetime.strptime(
-                in_time.strip(),
+                clean_in_time,
                 '%I:%M %p'
             )
 
             out_datetime = datetime.strptime(
-                time_str.strip(),
+                clean_out_time,
                 '%I:%M %p'
             )
 
@@ -344,9 +371,10 @@ def attendance():
 
                 out_datetime += timedelta(days=1)
 
+            # DIFFERENCE
             diff = out_datetime - in_datetime
 
-            # FORMAT
+            # TOTAL HOURS
             total_seconds = int(
                 diff.total_seconds()
             )
