@@ -57,7 +57,11 @@ async function loadEmployee() {
 
         });
 
-        const data = await response.json();
+        const text = await response.text();
+
+        console.log("SERVER RESPONSE:", text);
+
+        const data = JSON.parse(text);
 
         if (data.success) {
 

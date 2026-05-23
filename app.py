@@ -144,18 +144,7 @@ def attendance():
         # =========================================
         # GET RECORDS
         # =========================================
-        records = sheet.get_all_records(expected_headers=[
-            'Date',
-            'Employee ID',
-            'Employee Name',
-            'Punch IN',
-            'Punch OUT',
-            'IN Status',
-            'OUT Status',
-            'Working Hours',
-            'Device ID',
-            'Location'
-        ])
+        records = sheet.get_all_records()
 
         found_row = None
 
