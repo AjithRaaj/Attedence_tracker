@@ -6,6 +6,7 @@ import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
+import traceback
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ app = Flask(__name__)
 # =========================================
 OFFICE_LAT = 13.056600
 OFFICE_LON = 80.2541370
+
 ALLOWED_RADIUS = 30  # meters
 
 # =========================================
@@ -26,6 +28,7 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
+# GOOGLE CREDENTIALS
 if os.environ.get("GOOGLE_CREDENTIALS"):
 
     service_account_info = json.loads(
@@ -46,6 +49,7 @@ else:
 
 client = gspread.authorize(creds)
 
+# GOOGLE SHEET
 SHEET_ID = "1Ryj_plY3dJ6v9ZCE_QJXuR7vXdFHqFOHWwJb0ODQ6Js"
 
 sheet = client.open_by_key(SHEET_ID).sheet1
@@ -53,7 +57,7 @@ sheet = client.open_by_key(SHEET_ID).sheet1
 # =========================================
 # EMPLOYEE DATA
 # =========================================
-with open('employees.json', 'r') as f:
+with open("employees.json", "r") as f:
     employees = json.load(f)
 
 # =========================================
@@ -69,21 +73,35 @@ def home():
 @app.route('/get_employee', methods=['POST'])
 def get_employee():
 
-    emp_id = request.json.get('emp_id')
+    try:
 
-    emp = employees.get(emp_id)
+        data = request.json
 
-    if emp:
+        emp_id = str(data.get('emp_id')).strip()
+
+        emp = employees.get(emp_id)
+
+        if emp:
+
+            return jsonify({
+                'success': True,
+                'name': emp['name'],
+                'phone': emp['phone']
+            })
 
         return jsonify({
-            'success': True,
-            'name': emp['name'],
-            'phone': emp['phone']
+            'success': False,
+            'message': 'Employee not found ❌'
         })
 
-    return jsonify({
-        'success': False
-    })
+    except Exception as e:
+
+        traceback.print_exc()
+
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
 
 # =========================================
 # ATTENDANCE
@@ -99,7 +117,7 @@ def attendance():
         otp = str(data.get('otp')).strip()
         lat = float(data.get('lat'))
         lon = float(data.get('lon'))
-        action = str(data.get('action')).strip()
+        action = str(data.get('action')).strip().lower()
         device_id = str(data.get('device_id')).strip()
 
         # =========================================
@@ -142,9 +160,12 @@ def attendance():
         # =========================================
         # INDIA TIME
         # =========================================
-        now = datetime.now(ZoneInfo("Asia/Kolkata"))
+        now = datetime.now(
+            ZoneInfo("Asia/Kolkata")
+        )
 
         date_str = now.strftime('%d-%m-%Y')
+
         time_str = now.strftime('%I:%M %p')
 
         # =========================================
@@ -191,7 +212,7 @@ def attendance():
 
                     return jsonify({
                         'success': False,
-                        'message': '❌ This mobile already used by another employee'
+                        'message': 'This mobile already used by another employee ❌'
                     })
 
         # =========================================
@@ -210,9 +231,7 @@ def attendance():
 
             office_in = 9 * 60
 
-            # =========================================
-            # LATE CHECK
-            # =========================================
+            # STATUS
             if current_minutes <= office_in:
 
                 in_status = 'On Time'
@@ -223,9 +242,7 @@ def attendance():
 
                 in_status = f'{late} mins Late'
 
-            # =========================================
-            # SAVE TO SHEET
-            # =========================================
+            # SAVE
             sheet.append_row([
                 date_str,
                 emp_id,
@@ -260,6 +277,7 @@ def attendance():
                     'message': 'Punch IN not found ❌'
                 })
 
+            # CHECK ALREADY OUT
             out_time_existing = sheet.cell(
                 found_row,
                 5
@@ -272,18 +290,24 @@ def attendance():
                     'message': 'Already Punched OUT Today ✅'
                 })
 
+            # GET IN TIME
             in_time = sheet.cell(
                 found_row,
                 4
             ).value
 
+            if not in_time:
+
+                return jsonify({
+                    'success': False,
+                    'message': 'Punch IN time missing ❌'
+                })
+
             current_minutes = now.hour * 60 + now.minute
 
-            office_out = 17 * 60 + 30
+            office_out = (17 * 60) + 30
 
-            # =========================================
-            # EARLY / EXTRA CHECK
-            # =========================================
+            # OUT STATUS
             if current_minutes < office_out:
 
                 early = office_out - current_minutes
@@ -305,36 +329,56 @@ def attendance():
             # =========================================
             # WORKING HOURS CALCULATION
             # =========================================
-            if not in_time:
-
-                return jsonify({
-                    'success': False,
-                    'message': 'Punch IN time missing ❌'
-                })
-
             in_datetime = datetime.strptime(
-                in_time,
+                in_time.strip(),
                 '%I:%M %p'
             )
 
             out_datetime = datetime.strptime(
-                time_str,
+                time_str.strip(),
                 '%I:%M %p'
             )
 
-            # SAFE DIFFERENCE
+            # SAFE NEXT DAY FIX
             if out_datetime < in_datetime:
 
                 out_datetime += timedelta(days=1)
 
             diff = out_datetime - in_datetime
 
+            # FORMAT
+            total_seconds = int(
+                diff.total_seconds()
+            )
+
+            hours = total_seconds // 3600
+
+            minutes = (
+                total_seconds % 3600
+            ) // 60
+
+            working_hours = f"{hours} hrs {minutes} mins"
+
             # =========================================
             # UPDATE SHEET
             # =========================================
-            sheet.update_cell(found_row, 5, time_str)
-            sheet.update_cell(found_row, 7, out_status)
-            sheet.update_cell(found_row, 8, str(diff))
+            sheet.update_cell(
+                found_row,
+                5,
+                time_str
+            )
+
+            sheet.update_cell(
+                found_row,
+                7,
+                out_status
+            )
+
+            sheet.update_cell(
+                found_row,
+                8,
+                working_hours
+            )
 
             return jsonify({
                 'success': True,
@@ -342,13 +386,10 @@ def attendance():
                 'date': date_str,
                 'time': time_str,
                 'status': out_status,
-                'working_hours': str(diff),
+                'working_hours': working_hours,
                 'message': 'Punch OUT Success ✅'
             })
 
-        # =========================================
-        # INVALID ACTION
-        # =========================================
         return jsonify({
             'success': False,
             'message': 'Invalid Action ❌'
@@ -356,7 +397,8 @@ def attendance():
 
     except Exception as e:
 
-        print("ERROR:", e)
+        print("FULL ERROR:")
+        traceback.print_exc()
 
         return jsonify({
             'success': False,
