@@ -309,7 +309,7 @@ def attendance():
     return jsonify({
         'success': False,
         'message': str(e)
-    })
+    }), 500
 
 # =========================================
 # RUN
