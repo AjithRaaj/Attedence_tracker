@@ -4,17 +4,25 @@ console.log("Script Loaded Successfully");
 // SAFE GET FUNCTION
 // ===============================
 function safeGet(id) {
-    return document.getElementById(id)?.value || "";
+    return document.getElementById(id)?.value?.trim() || "";
 }
 
 // ===============================
 // DEVICE ID
 // ===============================
 function getDeviceId() {
+
     let deviceId = localStorage.getItem("device_id");
 
+    // FIRST TIME DEVICE CREATE
     if (!deviceId) {
-        deviceId = 'DEV-' + Math.random().toString(36).substring(2) + Date.now();
+
+        deviceId =
+            'DEV-' +
+            Math.random().toString(36).substring(2, 10) +
+            '-' +
+            Date.now();
+
         localStorage.setItem("device_id", deviceId);
     }
 
@@ -34,23 +42,40 @@ async function loadEmployee() {
     }
 
     try {
+
         const response = await fetch("/get_employee", {
+
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ emp_id: empId })
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                emp_id: empId
+            })
+
         });
 
         const data = await response.json();
 
         if (data.success) {
-            document.getElementById("name").value = data.name;
-            document.getElementById("phone").value = data.phone;
+
+            document.getElementById("name").value = data.name || "";
+            document.getElementById("phone").value = data.phone || "";
+
         } else {
+
             alert("Employee not found ❌");
+
+            document.getElementById("name").value = "";
+            document.getElementById("phone").value = "";
         }
 
     } catch (err) {
-        console.error(err);
+
+        console.error("LOAD EMPLOYEE ERROR:", err);
+
         alert("Server error ❌");
     }
 }
@@ -63,6 +88,7 @@ function markAttendance(action) {
     const emp_id = safeGet("emp_id");
     const otp = safeGet("otp");
 
+    // VALIDATION
     if (!emp_id) {
         alert("Employee ID required ❌");
         return;
@@ -73,48 +99,94 @@ function markAttendance(action) {
         return;
     }
 
+    // GEOLOCATION CHECK
     if (!navigator.geolocation) {
+
         alert("Geolocation not supported ❌");
+
         return;
     }
 
-    navigator.geolocation.getCurrentPosition(async function (position) {
+    // LOADING STATUS
+    const statusDiv = document.getElementById("status");
 
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const device_id = getDeviceId();
+    statusDiv.innerText = "Checking location...";
 
-        try {
-            const response = await fetch('/attendance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    emp_id,
-                    otp,
-                    lat,
-                    lon,
-                    action,
-                    device_id
-                })
-            });
+    navigator.geolocation.getCurrentPosition(
 
-            const data = await response.json();
+        async function (position) {
 
-            const statusDiv = document.getElementById("status");
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
 
-            if (data.success) {
-                statusDiv.innerText =
-                    `${data.name}\n${data.message}\n${data.date} ${data.time}`;
-            } else {
-                alert(data.message || "Attendance failed ❌");
+            const device_id = getDeviceId();
+
+            try {
+
+                const response = await fetch('/attendance', {
+
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+
+                    body: JSON.stringify({
+                        emp_id,
+                        otp,
+                        lat,
+                        lon,
+                        action,
+                        device_id
+                    })
+
+                });
+
+                const data = await response.json();
+
+                // SUCCESS
+                if (data.success) {
+
+                    statusDiv.innerText =
+                        `✅ ${data.name}
+${data.message}
+📅 ${data.date}
+⏰ ${data.time}
+📌 ${data.status}`;
+
+                } else {
+
+                    statusDiv.innerText = "";
+
+                    alert(data.message || "Attendance failed ❌");
+                }
+
+            } catch (err) {
+
+                console.error("ATTENDANCE ERROR:", err);
+
+                statusDiv.innerText = "";
+
+                alert("Server error ❌");
             }
 
-        } catch (err) {
-            console.error(err);
-            alert("Server error ❌");
-        }
+        },
 
-    }, function (error) {
-        alert("Location permission required ❌");
-    });
+        // LOCATION ERROR
+        function (error) {
+
+            console.error("LOCATION ERROR:", error);
+
+            statusDiv.innerText = "";
+
+            alert("Location permission required ❌");
+        },
+
+        // LOCATION OPTIONS
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
 }
