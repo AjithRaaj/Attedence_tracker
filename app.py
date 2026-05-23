@@ -306,10 +306,10 @@ def attendance():
 
         print("ERROR:", e)
 
-        return jsonify({
-            'success': False,
-            'message': 'Server Error ❌'
-        })
+    return jsonify({
+        'success': False,
+        'message': str(e)
+    })
 
 # =========================================
 # RUN
