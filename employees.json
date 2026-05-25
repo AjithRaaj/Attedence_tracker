@@ -82,8 +82,8 @@
   },
 
   "001": {
-    "name": "Testt",
-    "phone": "Dummy",
+    "name": "dummy",
+    "phone": "001",
     "otp": "1"
   },
 
