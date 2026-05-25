@@ -1,31 +1,23 @@
-console.log("🚀 Script Loaded Successfully");
+console.log("Script Loaded Successfully");
 
 /* =========================================
-   SAFE GET FUNCTION
+   SAFE GET
 ========================================= */
 
 function safeGet(id) {
 
-    return document.getElementById(id)?.value.trim() || "";
+    return document.getElementById(id)?.value || "";
 }
 
 /* =========================================
-   STATUS MESSAGE
+   SHOW STATUS
 ========================================= */
 
-function showStatus(message, success = true) {
+function showStatus(message) {
 
-    const statusDiv = document.getElementById("result");
-
-    statusDiv.innerHTML = message;
-
-    statusDiv.style.background = success
-        ? "rgba(34,197,94,0.18)"
-        : "rgba(239,68,68,0.18)";
-
-    statusDiv.style.border = success
-        ? "1px solid rgba(34,197,94,0.4)"
-        : "1px solid rgba(239,68,68,0.4)";
+    document.getElementById(
+        "result"
+    ).innerHTML = message;
 }
 
 /* =========================================
@@ -34,16 +26,19 @@ function showStatus(message, success = true) {
 
 function getDeviceId() {
 
-    let deviceId = localStorage.getItem("device_id");
+    let deviceId =
+        localStorage.getItem(
+            "device_id"
+        );
 
     if (!deviceId) {
 
         deviceId =
-            "DEV-"
-            + Math.random()
+            'DEV-' +
+            Math.random()
             .toString(36)
-            .substring(2)
-            + Date.now();
+            .substring(2) +
+            Date.now();
 
         localStorage.setItem(
             "device_id",
@@ -60,59 +55,54 @@ function getDeviceId() {
 
 async function loadEmployee() {
 
-    const empId = safeGet("emp_id");
+    const empId =
+        safeGet("emp_id");
 
     if (!empId) {
 
-        showStatus(
-            "⚠️ Employee ID required",
-            false
+        alert(
+            "Employee ID required ❌"
         );
 
         return;
     }
 
-    showStatus("⏳ Loading Employee...");
-
     try {
 
-        const response = await fetch(
-            "/get_employee",
-            {
-                method: "POST",
+        const response =
+            await fetch(
+                "/get_employee",
+                {
+                    method: "POST",
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                body: JSON.stringify({
-                    emp_id: empId
-                })
-            }
-        );
+                    body: JSON.stringify({
+                        emp_id: empId
+                    })
+                }
+            );
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
         if (data.success) {
 
-            document.getElementById("name").value =
-                data.name;
+            document.getElementById(
+                "name"
+            ).value = data.name;
 
-            document.getElementById("phone").value =
-                data.phone;
-
-            showStatus(
-                `✅ Employee Loaded Successfully<br><br>
-                 👤 ${data.name}<br>
-                 📞 ${data.phone}`
-            );
+            document.getElementById(
+                "phone"
+            ).value = data.phone;
 
         } else {
 
-            showStatus(
-                "❌ Employee not found",
-                false
+            alert(
+                "Employee not found ❌"
             );
         }
 
@@ -120,10 +110,7 @@ async function loadEmployee() {
 
         console.error(err);
 
-        showStatus(
-            "❌ Server error",
-            false
-        );
+        alert("Server error ❌");
     }
 }
 
@@ -133,15 +120,16 @@ async function loadEmployee() {
 
 function markAttendance(action) {
 
-    const emp_id = safeGet("emp_id");
+    const emp_id =
+        safeGet("emp_id");
 
-    const otp = safeGet("otp");
+    const otp =
+        safeGet("otp");
 
     if (!emp_id) {
 
-        showStatus(
-            "⚠️ Employee ID required",
-            false
+        alert(
+            "Employee ID required ❌"
         );
 
         return;
@@ -149,9 +137,8 @@ function markAttendance(action) {
 
     if (!otp) {
 
-        showStatus(
-            "⚠️ OTP required",
-            false
+        alert(
+            "OTP required ❌"
         );
 
         return;
@@ -159,21 +146,16 @@ function markAttendance(action) {
 
     if (!navigator.geolocation) {
 
-        showStatus(
-            "❌ Geolocation not supported",
-            false
+        alert(
+            "Geolocation not supported ❌"
         );
 
         return;
     }
 
-    showStatus(
-        "📍 Fetching location..."
-    );
-
     navigator.geolocation.getCurrentPosition(
 
-        async function (position) {
+        async function(position) {
 
             const lat =
                 position.coords.latitude;
@@ -186,19 +168,15 @@ function markAttendance(action) {
 
             try {
 
-                showStatus(
-                    "⏳ Processing Attendance..."
-                );
-
                 const response =
                     await fetch(
-                        "/attendance",
+                        '/attendance',
                         {
-                            method: "POST",
+                            method: 'POST',
 
                             headers: {
-                                "Content-Type":
-                                    "application/json"
+                                'Content-Type':
+                                    'application/json'
                             },
 
                             body: JSON.stringify({
@@ -220,9 +198,9 @@ function markAttendance(action) {
 
                     showStatus(
 
-                        `🎉 ${data.message}<br><br>
+                        `✅ ${data.name}<br>
 
-                        👤 <b>${data.name}</b><br>
+                        ${data.message}<br>
 
                         📅 ${data.date}<br>
 
@@ -231,36 +209,32 @@ function markAttendance(action) {
                         📌 ${data.status}
 
                         ${data.working_hours
-                            ? `<br>🕒 ${data.working_hours}`
+                            ? `<br><br>🕒 Working Hours : ${data.working_hours}`
                             : ""}`
                     );
 
                 } else {
 
-                    showStatus(
-
-                        `❌ ${data.message}`,
-
-                        false
+                    alert(
+                        data.message
                     );
                 }
 
-            } catch (err) {
+            } catch(err) {
 
                 console.error(err);
 
-                showStatus(
-                    "❌ Server error",
-                    false
+                alert(
+                    "Server error ❌"
                 );
             }
+
         },
 
-        function (error) {
+        function(error) {
 
-            showStatus(
-                "📍 Location permission required",
-                false
+            alert(
+                "Location permission required ❌"
             );
         }
     );
