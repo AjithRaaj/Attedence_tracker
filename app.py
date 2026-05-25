@@ -3,7 +3,11 @@ from datetime import datetime, timedelta
 from geopy.distance import geodesic
 import json
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import os
+
+from oauth2client.service_account import (
+    ServiceAccountCredentials
+)
 
 # =========================================
 # FLASK APP
@@ -18,7 +22,7 @@ app = Flask(__name__)
 OFFICE_LAT = 13.056600
 OFFICE_LON = 80.2541370
 
-ALLOWED_RADIUS = 30
+ALLOWED_RADIUS = 35
 
 # =========================================
 # GOOGLE SHEETS SETUP
@@ -31,16 +35,26 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    "service_account.json",
+google_creds = json.loads(
+    os.environ['GOOGLE_CREDS']
+)
+
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+    google_creds,
     scope
 )
 
 client = gspread.authorize(creds)
 
+# =========================================
+# GOOGLE SHEET
+# =========================================
+
 SHEET_ID = "1Ryj_plY3dJ6v9ZCE_QJXuR7vXdFHqFOHWwJb0ODQ6Js"
 
-sheet = client.open_by_key(SHEET_ID).sheet1
+sheet = client.open_by_key(
+    SHEET_ID
+).sheet1
 
 # =========================================
 # LOAD EMPLOYEES
@@ -55,6 +69,7 @@ with open("employees.json", "r") as f:
 
 @app.route('/')
 def home():
+
     return render_template('index.html')
 
 # =========================================
@@ -64,7 +79,9 @@ def home():
 @app.route('/get_employee', methods=['POST'])
 def get_employee():
 
-    emp_id = request.json.get('emp_id')
+    data = request.json
+
+    emp_id = data.get('emp_id')
 
     if emp_id in employees:
 
@@ -77,7 +94,30 @@ def get_employee():
         })
 
     return jsonify({
-        'success': False
+        'success': False,
+        'message': 'Employee Not Found ❌'
+    })
+
+# =========================================
+# LIVE EMPLOYEE COUNT
+# =========================================
+
+@app.route('/live_count')
+def live_count():
+
+    records = sheet.get_all_records()
+
+    today = datetime.now().strftime('%d-%m-%Y')
+
+    count = 0
+
+    for rec in records:
+
+        if rec['Date'] == today:
+            count += 1
+
+    return jsonify({
+        'count': count
     })
 
 # =========================================
@@ -89,11 +129,11 @@ def attendance():
 
     data = request.json
 
-    emp_id = data['emp_id']
-    otp = data['otp']
-    lat = float(data['lat'])
-    lon = float(data['lon'])
-    action = data['action']
+    emp_id = data.get('emp_id')
+    otp = data.get('otp')
+    lat = float(data.get('lat'))
+    lon = float(data.get('lon'))
+    action = data.get('action')
     device_id = data.get('device_id')
 
     # =====================================
@@ -124,8 +164,15 @@ def attendance():
     # LOCATION CHECK
     # =====================================
 
-    office = (OFFICE_LAT, OFFICE_LON)
-    employee_loc = (lat, lon)
+    office = (
+        OFFICE_LAT,
+        OFFICE_LON
+    )
+
+    employee_loc = (
+        lat,
+        lon
+    )
 
     distance = geodesic(
         office,
@@ -146,6 +193,7 @@ def attendance():
     now = datetime.now()
 
     date_str = now.strftime('%d-%m-%Y')
+
     time_str = now.strftime('%I:%M %p')
 
     records = sheet.get_all_records()
@@ -153,7 +201,7 @@ def attendance():
     found_row = None
 
     # =====================================
-    # FIND RECORD
+    # FIND TODAY RECORD
     # =====================================
 
     for i, rec in enumerate(records, start=2):
@@ -173,13 +221,13 @@ def attendance():
     for rec in records:
 
         if (
-            rec['Device ID'] == device_id
+            rec.get('Device ID') == device_id
             and str(rec['Employee ID']) != emp_id
         ):
 
             return jsonify({
                 'success': False,
-                'message': 'This mobile already used ❌'
+                'message': 'This Mobile Already Used ❌'
             })
 
     # =====================================
@@ -195,10 +243,18 @@ def attendance():
                 'message': 'Already Punched IN ✅'
             })
 
-        current_minutes = now.hour * 60 + now.minute
+        current_minutes = (
+            now.hour * 60
+            + now.minute
+        )
 
         office_in = 9 * 60
+
         grace_limit = office_in + 5
+
+        # =================================
+        # IN STATUS
+        # =================================
 
         if current_minutes <= grace_limit:
 
@@ -206,9 +262,18 @@ def attendance():
 
         else:
 
-            late = current_minutes - office_in
+            late = (
+                current_minutes
+                - office_in
+            )
 
-            in_status = f'{late} mins Late ⏰'
+            in_status = (
+                f'{late} mins Late ⏰'
+            )
+
+        # =================================
+        # SAVE TO SHEET
+        # =================================
 
         sheet.append_row([
             date_str,
@@ -241,7 +306,7 @@ def attendance():
 
             return jsonify({
                 'success': False,
-                'message': 'Punch IN not found ❌'
+                'message': 'Punch IN Not Found ❌'
             })
 
         out_time_existing = sheet.cell(
@@ -261,10 +326,20 @@ def attendance():
             4
         ).value
 
-        current_minutes = now.hour * 60 + now.minute
+        current_minutes = (
+            now.hour * 60
+            + now.minute
+        )
 
-        office_out = 17 * 60 + 30
-        grace_out = office_out + 20
+        office_out = (
+            17 * 60
+            + 30
+        )
+
+        grace_out = (
+            office_out
+            + 20
+        )
 
         # =================================
         # OUT STATUS
@@ -272,9 +347,14 @@ def attendance():
 
         if current_minutes < office_out:
 
-            early = office_out - current_minutes
+            early = (
+                office_out
+                - current_minutes
+            )
 
-            out_status = f'{early} mins Early Exit 🚶'
+            out_status = (
+                f'{early} mins Early Exit 🚶'
+            )
 
         elif current_minutes <= grace_out:
 
@@ -282,9 +362,14 @@ def attendance():
 
         else:
 
-            extra = current_minutes - office_out
+            extra = (
+                current_minutes
+                - office_out
+            )
 
-            out_status = f'{extra} mins Additional Stay 🔥'
+            out_status = (
+                f'{extra} mins Additional Stay 🔥'
+            )
 
         # =================================
         # WORKING HOURS
@@ -302,12 +387,16 @@ def attendance():
                 '%I:%M %p'
             )
 
-        except:
+        except Exception:
 
             return jsonify({
                 'success': False,
-                'message': 'Time format error ❌'
+                'message': 'Time Format Error ❌'
             })
+
+        # =================================
+        # HANDLE NEXT DAY
+        # =================================
 
         if out_datetime < in_datetime:
 
@@ -315,7 +404,9 @@ def attendance():
 
         diff = out_datetime - in_datetime
 
-        total_seconds = int(diff.total_seconds())
+        total_seconds = int(
+            diff.total_seconds()
+        )
 
         hours = total_seconds // 3600
 
@@ -359,8 +450,13 @@ def attendance():
             'message': 'Punch OUT Success ✅'
         })
 
+    # =====================================
+    # INVALID ACTION
+    # =====================================
+
     return jsonify({
-        'success': False
+        'success': False,
+        'message': 'Invalid Action ❌'
     })
 
 # =========================================
