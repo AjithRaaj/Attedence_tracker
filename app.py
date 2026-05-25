@@ -18,7 +18,7 @@ app = Flask(__name__)
 OFFICE_LAT = 13.056600
 OFFICE_LON = 80.2541370
 
-ALLOWED_RADIUS = 30  # meters
+ALLOWED_RADIUS = 35  # meters
 
 # =========================================
 # GOOGLE SHEETS SETUP
