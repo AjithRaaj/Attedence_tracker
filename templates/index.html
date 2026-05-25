@@ -1,64 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Attendance Tracking System</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- GOOGLE FONT -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
 
 <body>
 
     <div class="container">
 
-        <h1>Attendance Tracking System</h1>
+        <!-- HEADER -->
+        <div class="top-icon">
+            📍
+        </div>
+
+        <h1>
+            Attendance Tracker 🚀
+        </h1>
 
         <div class="quote">
-            “Success starts with discipline.”
+            “Success starts with discipline & consistency 💯”
         </div>
 
-        <!-- Employee ID -->
-        <input type="text" id="emp_id" placeholder="Employee ID">
+        <!-- EMPLOYEE ID -->
+        <input
+            type="text"
+            id="emp_id"
+            placeholder="👤 Enter Employee ID">
 
-        <button type="button" onclick="loadEmployee()">
-            Load Employee
+        <!-- LOAD BUTTON -->
+        <button
+            type="button"
+            onclick="loadEmployee()">
+
+            🔍 Load Employee
+
         </button>
 
-        <!-- Employee Details -->
-        <input type="text" id="name" placeholder="Employee Name" readonly>
-        <input type="text" id="phone" placeholder="Phone Number" readonly>
+        <!-- EMPLOYEE DETAILS -->
+        <input
+            type="text"
+            id="name"
+            placeholder="👨 Employee Name"
+            readonly>
 
-        <input type="text" value="Chennai Office" readonly>
+        <input
+            type="text"
+            id="phone"
+            placeholder="📞 Phone Number"
+            readonly>
+
+        <!-- OFFICE -->
+        <input
+            type="text"
+            value="🏢 Chennai Office"
+            readonly>
 
         <!-- OTP -->
-        <input type="text" id="otp" placeholder="Enter OTP">
+        <input
+            type="text"
+            id="otp"
+            placeholder="🔐 Enter OTP">
 
-        <!-- Buttons -->
+        <!-- BUTTON GROUP -->
         <div class="buttons">
 
-            <button type="button" class="in-btn" onclick="markAttendance('in')">
-                Punch IN
+            <!-- PUNCH IN -->
+            <button
+                type="button"
+                class="in-btn"
+                onclick="markAttendance('in')">
+
+                ✅ Punch IN
+
             </button>
 
-            <button type="button" class="out-btn" onclick="markAttendance('out')">
-                Punch OUT
+            <!-- PUNCH OUT -->
+            <button
+                type="button"
+                class="out-btn"
+                onclick="markAttendance('out')">
+
+                ❌ Punch OUT
+
             </button>
 
         </div>
 
-        <!-- Status -->
-        <div id="status" style="margin-top:15px; color:#333; font-size:14px;"></div>
+        <!-- STATUS -->
+        <div id="result">
 
-        <!-- Footer -->
+            ⏳ Waiting for action...
+
+        </div>
+
+        <!-- FOOTER -->
         <div class="footer">
-            Created By Ajith MIS
+
+            Made with ❤️ by Ajith MIS
+
         </div>
 
     </div>
 
-    <!-- ✅ JS (IMPORTANT - must be bottom) -->
+    <!-- JAVASCRIPT -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
+
 </html>
