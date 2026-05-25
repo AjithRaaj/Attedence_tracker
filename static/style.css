@@ -6,7 +6,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 100vh; /* full screen center */
 }
 
 /* MAIN CARD */
@@ -15,21 +15,20 @@ body {
     max-width: 95%;
     background: white;
     padding: 25px;
-    border-radius: 18px;
+    border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     transition: 0.3s;
     text-align: center;
 }
 
 .container:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
 }
 
 /* TITLE */
 h1 {
     color: #333;
     margin-bottom: 10px;
-    font-size: 26px;
 }
 
 /* QUOTE */
@@ -45,12 +44,11 @@ input {
     width: 100%;
     padding: 12px;
     margin-top: 12px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #ccc;
     outline: none;
     transition: 0.3s;
     font-size: 14px;
-    box-sizing: border-box;
 }
 
 input:focus {
@@ -60,54 +58,37 @@ input:focus {
 
 /* BUTTONS */
 button {
-    margin-top: 12px;
+    margin-top: 10px;
     width: 100%;
     padding: 12px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: none;
     cursor: pointer;
     font-weight: bold;
     transition: 0.3s;
-    font-size: 14px;
 }
 
 button:hover {
     opacity: 0.9;
-    transform: scale(1.02);
 }
 
 /* BUTTON GROUP */
 .buttons {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
     margin-top: 25px;
 }
 
-/* PUNCH IN */
 .in-btn {
     background: linear-gradient(135deg, #28a745, #5cd65c);
     color: white;
-    width: 50%;
+    width: 48%;
 }
 
-/* PUNCH OUT */
 .out-btn {
     background: linear-gradient(135deg, #dc3545, #ff6b6b);
     color: white;
-    width: 50%;
-}
-
-/* STATUS */
-#status {
-    margin-top: 18px;
-    padding: 12px;
-    border-radius: 10px;
-    background: #f4f8ff;
-    color: #333;
-    font-size: 14px;
-    white-space: pre-line;
-    line-height: 1.5;
+    width: 48%;
 }
 
 /* FOOTER */
@@ -119,26 +100,17 @@ button:hover {
 
 /* MOBILE RESPONSIVE */
 @media (max-width: 480px) {
-
-    body {
-        padding: 15px;
-    }
-
     .container {
-        width: 100%;
-        padding: 20px;
-    }
-
-    h1 {
-        font-size: 22px;
+        width: 95%;
+        margin: 20px;
     }
 
     .buttons {
         flex-direction: column;
     }
 
-    .in-btn,
-    .out-btn {
+    .in-btn, .out-btn {
         width: 100%;
+        margin-bottom: 10px;
     }
 }
