@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
 from geopy.distance import geodesic
+from zoneinfo import ZoneInfo
 import json
 import gspread
 import os
-import json
 
 from oauth2client.service_account import (
     ServiceAccountCredentials
@@ -15,6 +15,12 @@ from oauth2client.service_account import (
 # =========================================
 
 app = Flask(__name__)
+
+# =========================================
+# INDIA TIMEZONE
+# =========================================
+
+IST = ZoneInfo("Asia/Kolkata")
 
 # =========================================
 # OFFICE LOCATION
@@ -108,7 +114,7 @@ def live_count():
 
     records = sheet.get_all_records()
 
-    today = datetime.now().strftime('%d-%m-%Y')
+    today = datetime.now(IST).strftime('%d-%m-%Y')
 
     count = 0
 
@@ -188,10 +194,10 @@ def attendance():
         })
 
     # =====================================
-    # DATE & TIME
+    # INDIA DATE & TIME
     # =====================================
 
-    now = datetime.now()
+    now = datetime.now(IST)
 
     date_str = now.strftime('%d-%m-%Y')
 
@@ -218,20 +224,18 @@ def attendance():
     # =====================================
     # DEVICE CHECK
     # =====================================
-    
-    today = datetime.now().strftime('%d-%m-%Y')
-    
+
     for rec in records:
-    
+
         if (
-        rec.get('Device ID') == device_id
-        and str(rec['Employee ID']) != emp_id
-        and rec['Date'] == today
+            rec.get('Device ID') == device_id
+            and str(rec['Employee ID']) != emp_id
+            and rec['Date'] == date_str
         ):
 
             return jsonify({
                 'success': False,
-                'message': 'This Mobile Already Used ❌'
+                'message': 'This Mobile Already Used Today ❌'
             })
 
     # =====================================
@@ -244,7 +248,7 @@ def attendance():
 
             return jsonify({
                 'success': False,
-                'message': 'Already Punched IN ✅'
+                'message': 'Already Punched IN Today ✅'
             })
 
         current_minutes = (
