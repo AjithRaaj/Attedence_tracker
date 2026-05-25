@@ -4,6 +4,7 @@ from geopy.distance import geodesic
 import json
 import gspread
 import os
+import json
 
 from oauth2client.service_account import (
     ServiceAccountCredentials
@@ -217,12 +218,15 @@ def attendance():
     # =====================================
     # DEVICE CHECK
     # =====================================
-
+    
+    today = datetime.now().strftime('%d-%m-%Y')
+    
     for rec in records:
-
+    
         if (
-            rec.get('Device ID') == device_id
-            and str(rec['Employee ID']) != emp_id
+        rec.get('Device ID') == device_id
+        and str(rec['Employee ID']) != emp_id
+        and rec['Date'] == today
         ):
 
             return jsonify({
@@ -467,6 +471,6 @@ if __name__ == '__main__':
 
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=int(os.environ.get("PORT", 5000)),
         debug=True
     )
