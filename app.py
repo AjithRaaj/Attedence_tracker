@@ -46,7 +46,7 @@ sheet = client.open_by_key(SHEET_ID).sheet1
 # LOAD EMPLOYEE JSON
 # =========================================
 
-with open('employees.json', 'r') as f:
+with open('employees.json', 'r', encoding='utf-8') as f:
     employees = json.load(f)
 
 # =========================================
@@ -350,7 +350,7 @@ def attendance():
 # =========================================
 
 if __name__ == '__main__':
-
+    
     app.run(
         host='0.0.0.0',
         port=5000,
