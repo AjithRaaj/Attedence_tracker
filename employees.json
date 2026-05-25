@@ -81,28 +81,28 @@
     "otp": "2000"
   },
 
-  "001": {
+  "1": {
     "name": "dummy",
     "phone": "001",
     "otp": "1"
   },
 
-  "002": {
+  "2": {
+    "name": "Testing",
+    "phone": "Dummy",
+    "otp": "2"
+  },
+
+  "3": {
     "name": "Testing",
     "phone": "Dummy",
     "otp": "3"
   },
 
-  "003": {
+  "4": {
     "name": "Testing",
     "phone": "Dummy",
     "otp": "4"
-  },
-
-  "1004": {
-    "name": "Testing",
-    "phone": "Dummy",
-    "otp": "5"
 
   }
 }
